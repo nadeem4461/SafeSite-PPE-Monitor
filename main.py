@@ -1,36 +1,58 @@
 import cv2
+import os
+import time
 from ultralytics import YOLO
 
-# 1. Load your custom-trained model
+# 1. Load the model
 model = YOLO("models/best.pt")
 
-# 2. Turn on the webcam (0 is usually the default laptop camera)
-cap = cv2.VideoCapture(0)
+# --- NEW: Setup the Evidence Folder ---
+if not os.path.exists("evidence"):
+    os.makedirs("evidence")
+    print("Created 'evidence' folder.")
 
+# --- NEW: Alert Cooldown (Debounce) ---
+last_alert_time = 0
+cooldown_seconds = 10  # Wait 10 seconds between taking pictures
+
+# 2. Start Webcam
+cap = cv2.VideoCapture(0)
 print("Starting webcam... Press 'q' to quit.")
 
 while True:
-    # Read a single frame from the webcam
     success, frame = cap.read()
-    
     if not success:
-        print("Failed to grab frame from webcam. Is it being used by another app?")
         break
-        
-    # 3. Run the AI on that frame
-    # conf=0.4 means it will only draw a box if it is at least 40% sure
-    results = model(frame, conf=0.4)
 
-    # 4. Tell the model to draw the bounding boxes on the frame
+    # 3. Run AI (Increased conf to 0.6 to ignore background clothes!)
+    results = model(frame, conf=0.6)
     annotated_frame = results[0].plot()
 
-    # 5. Display the frame in a window
+    # --- NEW: Business Logic ---
+    # Extract the names of what the AI found in this exact frame
+    detected_classes = [model.names[int(c)] for c in results[0].boxes.cls]
+
+    # Check if a violation is happening
+    if "NO-Hardhat" in detected_classes or "NO-Safety Vest" in detected_classes:
+        
+        current_time = time.time()
+        
+        # Check if our cooldown timer is up
+        if current_time - last_alert_time > cooldown_seconds:
+            print(f"🚨 VIOLATION DETECTED: Saving evidence...")
+            
+            # Save the image with a unique timestamp name
+            filename = f"evidence/violation_{int(current_time)}.jpg"
+            cv2.imwrite(filename, annotated_frame)
+            
+            # Reset the timer
+            last_alert_time = current_time
+
+    # 4. Show the video
     cv2.imshow("SafeSite PPE Monitor", annotated_frame)
 
-    # 6. Wait for the 'q' key to be pressed to stop the loop
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
-# Clean up and turn off the camera
 cap.release()
 cv2.destroyAllWindows()
