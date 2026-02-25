@@ -1,0 +1,5 @@
+# Ignore all files in the proof directory
+proof/
+
+# Ignore the trained model weights
+models/best.pt
