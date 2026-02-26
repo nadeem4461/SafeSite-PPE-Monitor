@@ -1,5 +1,53 @@
-# Ignore all files in the proof directory
+# =========================
+# Custom Project Data
+# =========================
+# Ignore evidence images so we don't upload pictures of ourselves!
+evidence/
+# Ignore user specified directories
 proof/
 
-# Ignore the trained model weights
+# =========================
+# Machine Learning & AI
+# =========================
+# Ignore the trained weights (these are heavy, usually provided via a Google Drive link in the README)
 models/best.pt
+# Ignore default YOLO models that might download automatically
+yolov8n.pt
+*.pt
+# Ignore Ultralytics log folders (if you ever run predict/train locally)
+runs/
+
+# =========================
+# Database
+# =========================
+# Never upload the live database containing real incident logs
+safesite.db
+*.sqlite3
+*.db
+
+# =========================
+# Python / Backend
+# =========================
+# Ignore virtual environments
+venv/
+env/
+.venv/
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# =========================
+# Frontend / Vite (React)
+# =========================
+# Ignore the massive folder containing all React libraries
+client/node_modules/
+# Ignore the compiled production build folder
+client/dist/
+
+# =========================
+# Environment Variables
+# =========================
+# Ignore secret keys or port configurations
+.env
+.env.local
