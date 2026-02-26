@@ -1,7 +1,20 @@
 import cv2
 import os
 import time
+import sqlite3
 from ultralytics import YOLO
+
+conn = sqlite3.connect('safesite.db')
+cursor = conn.cursor()
+cursor.execute('''
+create table if not exists incidents(
+               id integer primary key autoincrement,
+               timestamp datetime default current_timestamp,
+               violation_type text,
+               image_path text
+               )               
+''')
+conn.commit()
 
 # 1. Load the model
 model = YOLO("models/best.pt")
@@ -25,7 +38,7 @@ while True:
         break
 
     # 3. Run AI (Increased conf to 0.6 to ignore background clothes!)
-    results = model(frame, conf=0.6)
+    results = model(frame, conf=0.6, verbose=False) # Added verbose=False
     annotated_frame = results[0].plot()
 
     # --- NEW: Business Logic ---
@@ -39,12 +52,22 @@ while True:
         
         # Check if our cooldown timer is up
         if current_time - last_alert_time > cooldown_seconds:
-            print(f"🚨 VIOLATION DETECTED: Saving evidence...")
+            print(f"🚨 VIOLATION DETECTED: Saving evidence to Database ...")
             
             # Save the image with a unique timestamp name
             filename = f"evidence/violation_{int(current_time)}.jpg"
             cv2.imwrite(filename, annotated_frame)
             
+            violation_type = "Multiple Violations"
+
+            if "NO-Hardhat" in detected_classes and "NO-Safety Vest" not in detected_classes:
+                violation_type = "Missing Hardhat"
+            elif "NO-Safety Vest" in detected_classes and "NO-Hardhat" not in detected_classes:
+                violation_type = "Missing Vest"
+
+            cursor.execute('''
+                          insert into incidents (violation_type,image_path) values(?,?) ''',(violation_type,filename))
+            conn.commit()
             # Reset the timer
             last_alert_time = current_time
 
