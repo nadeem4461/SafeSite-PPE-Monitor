@@ -1,8 +1,17 @@
 import cv2
 import os
 import time
+import pyttsx3
 import sqlite3
+import threading
 from ultralytics import YOLO
+
+def play_audio_warning():
+    engine = pyttsx3.init()
+    engine.setProperty('rate',160)
+    engine.say("Warning. PPE violation detected. Please wear your safety gear.")
+    engine.runAndWait()
+
 
 conn = sqlite3.connect('safesite.db')
 cursor = conn.cursor()
@@ -53,6 +62,8 @@ while True:
         # Check if our cooldown timer is up
         if current_time - last_alert_time > cooldown_seconds:
             print(f"🚨 VIOLATION DETECTED: Saving evidence to Database ...")
+
+            threading.Thread(target=play_audio_warning).start()
             
             # Save the image with a unique timestamp name
             filename = f"evidence/violation_{int(current_time)}.jpg"
