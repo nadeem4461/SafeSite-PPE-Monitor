@@ -1,58 +1,50 @@
-# 🚧 SafeSite PPE Monitor (Full-Stack AI System)
+# 🚧 SafeSite: Real-Time AI PPE Monitoring System
 
-A real-time computer vision application that detects Personal Protective Equipment (PPE) compliance on construction sites. This system uses a custom-trained YOLOv8 object detection model to identify missing hardhats, masks, and safety vests, logs violations to a local database, and displays the evidence on a modern React web dashboard.
+An enterprise-grade, full-stack AI application designed to monitor industrial and construction environments in real-time. SafeSite uses custom-trained YOLOv8 computer vision to detect missing Personal Protective Equipment (PPE) such as hardhats and safety vests. 
 
-## ✨ Features
-* **Real-Time AI Inference:** Processes live webcam feeds using a custom YOLOv8 Nano model.
-* **Automated Violation Logging:** Captures screenshot evidence when compliance rules are broken.
-* **Smart Debouncing:** Implements cooldown logic to prevent database spamming during sustained violations.
-* **RESTful API:** Serves database logs and static image files via FastAPI.
-* **Modern Web Dashboard:** A Vite-powered React front-end to review incident reports.
+When a safety violation occurs inside a user-defined "Danger Zone," the system instantly logs the incident, streams the evidence to a React web dashboard, and fires a real-time photo alert to a mobile device via Telegram.
 
-## 🛠️ Tech Stack
-* **Machine Learning:** Ultralytics YOLOv8, OpenCV, Python
-* **Backend API:** FastAPI, Uvicorn, SQLite
-* **Frontend:** React.js, Vite
-* **Dataset & Training:** Roboflow, Google Colab (NVIDIA T4 GPU)
+## ✨ Key Features
+* **Real-Time AI Detection:** Utilizes Ultralytics YOLOv8 for high-speed, accurate object detection of workers and safety gear.
+* **Interactive Danger Zone Mapping:** Features a dynamic OpenCV GUI (`cv2.selectROI`) allowing safety managers to draw custom restricted areas on the camera feed before monitoring begins.
+* **Live Video Streaming:** Uses `Multipart/x-mixed-replace` to stream the AI-annotated video feed seamlessly from a Python backend directly into a React web interface.
+* **Automated Incident Logging:** Logs all violations, timestamps, and image paths into a local SQLite database for historical tracking.
+* **Instant Mobile Alerts:** Integrates with the Telegram Bot API to push real-time photo evidence and violation details directly to a safety officer's phone.
+* **Wireless Camera Support:** Capable of processing RTSP/IP camera streams (e.g., using a mobile phone as a wireless surveillance camera).
 
-## 🚀 How to Run Locally
+## 🛠️ Technology Stack
+* **Computer Vision:** Python, OpenCV, YOLOv8 (`best.pt`)
+* **Backend API & Streaming:** FastAPI, Uvicorn
+* **Database:** SQLite3
+* **Frontend Web Dashboard:** React, Vite, CSS Grid
+* **Cloud & Notifications:** Telegram Bot API, Pyttsx3 (Audio generation)
 
-### 1. Setup the Environment
+## 📸 Dashboard Preview
+*(Add your screenshots here! Replace the links with your actual image paths once uploaded to GitHub)*
+* `![Live Dashboard](path/to/your/react_dashboard_screenshot.png)`
+* `![Telegram Alert](path/to/your/telegram_alert_screenshot.png)`
+
+## 🚀 Installation & Setup
+
+### 1. Prerequisites
+* Python 3.9+
+* Node.js & npm
+* A Telegram Bot Token and Chat ID (for mobile alerts)
+
+### 2. Backend Setup (AI & FastAPI)
 Clone the repository and install the Python dependencies:
 ```bash
-git clone [https://github.com/nadeem4461/SafeSite-PPE-Monitor.git](https://github.com/nadeem4461/SafeSite-PPE-Monitor.git)
-cd SafeSite-PPE-Monitor
-pip install ultralytics opencv-python fastapi uvicorn
+git clone [https://github.com/yourusername/safesite-ppe-monitor.git](https://github.com/yourusername/safesite-ppe-monitor.git)
+cd safesite-ppe-monitor
+pip install opencv-python ultralytics pyttsx3 requests fastapi uvicorn
 
 ```
 
-### 2. Add the AI Model
+*Note: Open `app.py` and replace `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID` with your actual credentials.*
 
-Since the trained weights are ignored in Git due to file size limits, download the custom model here:
+### 3. Frontend Setup (React)
 
-> **[best.pth]**
-
-Place the downloaded `best.pt` file inside the `models/` directory exactly like this:
-
-```text
-SafeSite-PPE-Monitor/
-└── models/
-    └── best.pt
-
-```
-
-### 3. Start the Backend API & Database
-
-Open a terminal and start the FastAPI server to serve the SQLite database:
-
-```bash
-uvicorn api:app --reload
-
-```
-
-### 4. Start the React Dashboard
-
-Open a second terminal, install the Node modules, and start Vite:
+Open a second terminal to start the web dashboard:
 
 ```bash
 cd client
@@ -61,25 +53,25 @@ npm run dev
 
 ```
 
-### 5. Launch the AI Security Camera
+## 🎮 How to Use the System
 
-Open a third terminal and run the main inference script to turn on your webcam:
-
+1. Run the super-server from your backend directory:
 ```bash
-python main.py
+python app.py
 
 ```
 
-## 👤 Author
+
+2. **Draw the Danger Zone:** A static image from your webcam will pop up. Click and drag your mouse to draw a blue box over the restricted area. Press **ENTER** to confirm.
+3. **Monitor:** Open your browser to `http://localhost:5173`. You will see the live AI video feed.
+4. **Test it:** Walk into the camera's view (inside the area you boxed) without a helmet. The system will log the incident on the dashboard and send a photo to your Telegram!
+
+## 🧠 Technical Architecture
+
+The application resolves the bottleneck of running synchronous AI loops alongside a web server by utilizing Python multithreading. The YOLOv8 inference loop runs on a daemon thread, constantly updating a global frame buffer, while the FastAPI server runs on the main thread, continuously yielding that buffer to the React frontend as a JPEG byte stream.
+
+## 👨‍💻 Author
 
 **MD Nadeemuddin**
 
-```
-
-Once you paste and save that, just run your Git commands to push it to your repository:
-```bash
-git add README.md
-git commit -m "Added professional README"
-git push
-
-```
+* Computer Science Engineering @ MSRIT
